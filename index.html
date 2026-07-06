@@ -143,6 +143,13 @@
         .time-input-label { font-size: 0.8rem; color: var(--text-muted); margin-right: 0.5rem; white-space: nowrap; }
         .task-time-input, .task-duration-input { background: transparent; border: none; padding: 0.75rem 0; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none; width: 100%; cursor: pointer; min-width: 0; }
         
+        /* Кнопка очистки поля */
+        .clear-input-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: all 0.2s; margin-left: 0.25rem; flex-shrink: 0; }
+        .clear-input-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        /* Магия CSS: показываем кнопку только если инпут не пустой (опираясь на placeholder) */
+        input:not(:placeholder-shown) + .clear-input-btn { opacity: 0.5; pointer-events: auto; }
+        input:not(:placeholder-shown) + .clear-input-btn:hover { opacity: 1; color: var(--danger-color); background-color: rgba(239, 68, 68, 0.1); }
+
         .modal-submit-btn { background-color: var(--primary-color); color: white; border: none; border-radius: var(--border-radius); padding: 0.8rem; font-family: inherit; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.1s; width: 100%; margin-top: 0.5rem; }
         .modal-submit-btn:hover { background-color: var(--primary-hover); }
         .modal-submit-btn:active { transform: scale(0.98); }
@@ -350,45 +357,44 @@
             </div>
             <form class="add-task-form" id="task-form">
                 <div class="form-row">
-                    <input type="text" id="task-input" class="task-input" placeholder="Что нужно сделать?" autocomplete="off" required>
+                <div class="time-input-group">
+                    <span class="time-input-label">Время:</span>
+                    <input type="text" id="task-time" class="task-time-input" placeholder="09:00">
+                    <button type="button" class="clear-input-btn" aria-label="Очистить" tabindex="-1"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                 </div>
-                <div class="form-row">
-                    <div class="time-input-group">
-                        <span class="time-input-label">Дата:</span>
-                        <input type="date" id="task-date" class="task-duration-input">
-                    </div>
-                    <div class="time-input-group" id="recurrence-group">
-                        <span class="time-input-label">Повтор:</span>
-                        <select id="task-recurrence" class="task-duration-input" style="-webkit-appearance: auto; appearance: auto;">
-                            <option value="none">Без повторов</option>
-                            <option value="daily">Каждый день</option>
-                            <option value="weekly">Каждую неделю</option>
-                            <option value="monthly">Каждый месяц</option>
-                        </select>
-                    </div>
+                <div class="time-input-group">
+                    <span class="time-input-label">План:</span>
+                    <input type="text" id="task-plan" class="task-duration-input" placeholder="напр., 1h 30m">
+                    <button type="button" class="clear-input-btn" aria-label="Очистить" tabindex="-1"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                 </div>
-                <div class="form-row">
-                    <div class="time-input-group">
-                        <span class="time-input-label">Кат-я:</span>
-                        <select id="task-task-category" class="task-duration-input" style="-webkit-appearance: auto; appearance: auto;"></select>
-                    </div>
-                    <div class="time-input-group">
-                        <span class="time-input-label">Проект:</span>
-                        <select id="task-project" class="task-duration-input" style="-webkit-appearance: auto; appearance: auto;"></select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="time-input-group">
-                        <span class="time-input-label">Время:</span>
-                        <input type="text" id="task-time" class="task-time-input" placeholder="09:00">
-                    </div>
-                    <div class="time-input-group">
-                        <span class="time-input-label">План:</span>
-                        <input type="text" id="task-plan" class="task-duration-input" placeholder="напр., 1h 30m">
-                    </div>
-                </div>
-                <button type="submit" class="modal-submit-btn" id="modal-submit-btn">Сохранить</button>
+            </div>
+            <button type="submit" class="modal-submit-btn" id="modal-submit-btn">Сохранить</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Окно запроса фактического времени -->
+    <div class="modal-overlay" id="actual-time-modal">
+        <div class="modal-content" style="max-width: 350px;">
+            <div class="modal-header">
+                <h2>Задача выполнена! 🎉</h2>
+                <button class="close-modal-btn" id="close-actual-modal-btn">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div style="margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">
+            Сколько времени заняла задача? (необязательно)
+        </div>
+        <div class="form-row">
+            <div class="time-input-group" style="width: 100%; padding: 0 0.5rem;">
+                <input type="text" id="prompt-actual-input" class="task-duration-input" placeholder="напр., 2 или 1:30" autocomplete="off">
+                <button type="button" class="clear-input-btn" aria-label="Очистить" tabindex="-1"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                <button class="modal-submit-btn" id="save-actual-btn" style="flex: 2; margin-top: 0;">Сохранить</button>
+                <button class="modal-submit-btn btn-secondary" id="skip-actual-btn" style="flex: 1; margin-top: 0;">Пропустить</button>
+            </div>
         </div>
     </div>
 
@@ -465,6 +471,7 @@
 
         let editingTaskId = null;
         let editingProjectId = null;
+        let pendingActualTimeTask = null;
         const PALETTE = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#64748b', '#14b8a6'];
         let selectedProjectColor = PALETTE[0];
 
@@ -925,18 +932,37 @@
             if (isCompleted && !compDates.includes(dateStr)) compDates.push(dateStr);
             else if (!isCompleted) compDates = compDates.filter(d => d !== dateStr);
             
-            // Запрашиваем фактическое время, если задача выполнена
             let actualTimes = task.actualTimeByDate || {};
+            
+            // Если задача выполнена и был задан план, открываем красивую модалку
             if (isCompleted && task.planned) {
-                const manualActual = prompt(`Задача выполнена!\nСколько времени она заняла? (Например: 1h 30m или 90)`, task.planned);
-                if (manualActual !== null) {
-                    actualTimes[dateStr] = parseDuration(manualActual) || task.planned;
-                }
-            } else if (!isCompleted) {
-                delete actualTimes[dateStr];
+                pendingActualTimeTask = { task, dateStr, compDates, actualTimes };
+                const modal = document.getElementById('actual-time-modal');
+                const input = document.getElementById('prompt-actual-input');
+                input.value = task.planned ? formatDurationText(task.planned) : '';
+                modal.classList.add('active');
+                setTimeout(() => input.focus(), 100);
+            } else {
+                if (!isCompleted) delete actualTimes[dateStr];
+                saveTask({ ...task, completedDates: compDates, actualTimeByDate: actualTimes });
+            }
+        }
+
+        // Обработка действий в кастомной модалке времени
+        function finalizeActualTime(saveValue = true) {
+            if (!pendingActualTimeTask) return;
+            const { task, dateStr, compDates, actualTimes } = pendingActualTimeTask;
+
+            if (saveValue) {
+                const inputVal = document.getElementById('prompt-actual-input').value;
+                const parsed = parseDuration(inputVal);
+                actualTimes[dateStr] = parsed || task.planned || 0;
             }
 
             saveTask({ ...task, completedDates: compDates, actualTimeByDate: actualTimes });
+
+            document.getElementById('actual-time-modal').classList.remove('active');
+            pendingActualTimeTask = null;
         }
 
         // === НАВИГАЦИЯ И БЕЙДЖИ ===
@@ -1113,11 +1139,40 @@
         document.getElementById('task-time').addEventListener('blur', (e) => e.target.value = parseTimeValue(e.target.value));
         document.getElementById('task-plan').addEventListener('blur', (e) => { const v = parseDuration(e.target.value); e.target.value = v ? formatDurationText(v) : ''; });
 
+        // Очистка инпутов по крестику
+        document.querySelectorAll('.clear-input-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const input = e.currentTarget.previousElementSibling;
+                if (input && input.tagName === 'INPUT') {
+                    input.value = '';
+                    input.focus();
+                }
+            });
+        });
+
         // Модалки: Закрытие
         document.querySelectorAll('.close-modal-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('active'));
+            btn.addEventListener('click', (e) => {
+                const overlay = e.target.closest('.modal-overlay');
+                overlay.classList.remove('active');
+                // Если закрыли крестиком модалку факта времени - просто пропускаем ввод, но сохраняем задачу
+                if (overlay.id === 'actual-time-modal') finalizeActualTime(false);
+            });
         });
         document.getElementById('open-modal-btn').addEventListener('click', () => openTaskModal(null));
+
+        // Слушатели кнопок для окна ввода фактического времени
+        document.getElementById('save-actual-btn').addEventListener('click', () => finalizeActualTime(true));
+        document.getElementById('skip-actual-btn').addEventListener('click', () => finalizeActualTime(false));
+        document.getElementById('actual-time-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'actual-time-modal') finalizeActualTime(false);
+        });
+        document.getElementById('prompt-actual-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                finalizeActualTime(true);
+            }
+        });
 
         // --- Управление Проектами ---
         function renderProjectsAnalytics() {
